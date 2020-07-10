@@ -26,4 +26,6 @@ public class Blocks extends Rectangle {
         if (!destroyed)
             graphics.drawImage(this.pic, this.x, this.y, this.width, this.height, component);
     }
+
+
 }
