@@ -1,0 +1,7 @@
+
+on run {input, parameters}
+	set p to POSIX path of (path to me)
+	do shell script "java -jar " & p & "/Contents/Java/game-sample-awt.jar"
+
+	return input
+end run

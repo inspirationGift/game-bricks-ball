@@ -2,6 +2,7 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.MalformedURLException;
 
 public class Main {
 
@@ -12,16 +13,16 @@ public class Main {
         button.setSize(100, 25);
         button.setFocusable(false);
 
-        button.addActionListener(e -> {
-//            Main.main(args);
-//            System.exit(0);
-            System.out.println("clicked");
-        });
-
         BlockBreakerPanel panel = new BlockBreakerPanel();
+
         frame.getContentPane().add(BorderLayout.CENTER, panel);
         frame.getContentPane().add(BorderLayout.SOUTH, button);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+
+        button.addActionListener(e -> {
+//            System.exit(5);
+        });
 
         frame.setVisible(true);
         frame.setSize(490, 600);
