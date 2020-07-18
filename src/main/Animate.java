@@ -1,8 +1,9 @@
 package main;
 
+
 public class Animate implements Runnable {
 
-    private BlockBreakerPanel panel;
+    private final BlockBreakerPanel panel;
 
     public Animate(BlockBreakerPanel panel) {
         this.panel = panel;
