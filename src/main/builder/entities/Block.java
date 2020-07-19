@@ -1,15 +1,15 @@
-package main.builder;
+package main.builder.entities;
 
 import java.awt.*;
 
 public class Block extends Rectangle {
     Image pic;
-    int dx = 3;
-    int dy = -3;
-    Rectangle left, right;
+    public int dx = 3;
+    public int dy = -3;
+    public Rectangle left, right;
 
-    boolean destroyed = false;
-    boolean isBlockPoweredUp = false;
+    public boolean destroyed = false;
+    public boolean isBlockPoweredUp = false;
 
     public Block(int x, int y, int width, int height, String path) {
         super(x, y, width, height);

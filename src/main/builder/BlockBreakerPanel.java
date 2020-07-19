@@ -1,5 +1,8 @@
 package main.builder;
 
+import main.builder.entities.BlocksBuilder;
+import main.builder.entities.Block;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -10,12 +13,13 @@ import java.util.Random;
 
 public class BlockBreakerPanel extends JPanel implements KeyListener {
 
+    private BlocksBuilder blocksBuilder;
     private List<Block> blocks;
     private List<Block> ballList;
     private List<Block> powerUpList;
     private Block paddle;
-    private Block gameOver;
-    private Block win;
+    private Block gameOverSign;
+    private Block winSign;
     private boolean gameEnd;
     private Thread thread;
     private Animate animate;
@@ -24,36 +28,22 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
     }
 
     public void buildGame() {
-        this.blocks = new ArrayList<>();
-        this.ballList = new ArrayList<>();
-        this.powerUpList = new ArrayList<>();
         this.thread = new Thread();
 
-        this.paddle = new Block(175, 480, 150, 2, "resources/paddle.png");
-        this.gameOver = new Block(100, 150, 300, 150, "resources/gameover.png");
-        this.win = new Block(100, 150, 300, 150, "resources/win.png");
-        this.win.destroyed = true;
-        this.gameOver.destroyed = true;
+        this.blocksBuilder = new BlocksBuilder();
+        this.blocks = this.blocksBuilder.getHorizontalBlocksList();
+        this.ballList = this.blocksBuilder.getBallList();
+        this.paddle = this.blocksBuilder.getPaddle();
+        this.winSign = this.blocksBuilder.getWinSign();
+        this.gameOverSign = this.blocksBuilder.getGameOverSign();
+        this.gameEnd = false;
 
-        for (int i = 0; i < 8; i++)
-            blocks.add(new Block((i * 60 + 2), 0, 60, 25, "resources/blue.png"));
-
-        for (int i = 0; i < 8; i++)
-            blocks.add(new Block((i * 60 + 2), 25, 60, 25, "resources/green.png"));
-
-        for (int i = 0; i < 8; i++)
-            blocks.add(new Block((i * 60 + 2), 50, 60, 25, "resources/yellow.png"));
-
-        for (int i = 0; i < 8; i++)
-            blocks.add(new Block((i * 60 + 2), 75, 60, 25, "resources/red.png"));
+        this.powerUpList = new ArrayList<>();
 
         Random random = new Random();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++)
             blocks.get(random.nextInt(32)).isBlockPoweredUp = true;
-        }
 
-        ballList.add(new Block(237, 437, 25, 25, "resources/ball.png"));
-        this.gameEnd = false;
         addKeyListener(this);
         setFocusable(true);
     }
@@ -65,8 +55,8 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         for (Block block : this.ballList) block.draw(g, this);
         for (Block block : this.powerUpList) block.draw(g, this);
         this.paddle.draw(g, this);
-        this.gameOver.draw(g, this);
-        this.win.draw(g, this);
+        this.gameOverSign.draw(g, this);
+        this.winSign.draw(g, this);
     }
 
     public void update() {
@@ -108,15 +98,15 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
     }
 
     private void gameOver() {
-        if (blockCount(ballList) == 0 && !this.gameEnd) {
-            this.gameOver.destroyed = false;
+        if (this.blocksBuilder.destroyedBlocksCountInList(this.ballList) == 0 && !this.gameEnd) {
+            this.gameOverSign.destroyed = false;
             this.paddle.destroyed = true;
         }
     }
 
     private void win() {
-        if (blockCount(blocks) == 0) {
-            this.win.destroyed = false;
+        if (this.blocksBuilder.destroyedBlocksCountInList(this.blocks) == 0) {
+            this.winSign.destroyed = false;
             this.paddle.destroyed = true;
             this.gameEnd = true;
         }
@@ -131,18 +121,9 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
             blockPower.y += 1;
             if (blockPower.intersects(paddle) && !blockPower.destroyed) {
                 blockPower.destroyed = true;
-                ballList.add(new Block(paddle.dx + 75, 437, 25, 30, "resources/ball.png"));
+                this.blocksBuilder.setAdditionalBall();
             }
         }
-    }
-
-    public int blockCount(List<Block> blocks) {
-        return blocks.stream().mapToInt(ball -> {
-            if (!ball.destroyed) {
-                return 1;
-            }
-            return 0;
-        }).sum();
     }
 
     @Override
@@ -174,9 +155,4 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
             this.thread.start();
         }
     }
-
-    public boolean isGameOver() {
-        return gameEnd;
-    }
-
 }
