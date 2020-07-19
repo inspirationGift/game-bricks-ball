@@ -1,4 +1,4 @@
-package main;
+package main.builder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,17 +10,26 @@ import java.util.Random;
 
 public class BlockBreakerPanel extends JPanel implements KeyListener {
 
-    private final List<Block> blocks = new ArrayList<>();
-    private final List<Block> ball = new ArrayList<>();
-    private final List<Block> powerUp = new ArrayList<>();
-    private final Block paddle;
-    private final Block gameOver;
-    private final Block win;
+    private List<Block> blocks;
+    private List<Block> ballList;
+    private List<Block> powerUpList;
+    private Block paddle;
+    private Block gameOver;
+    private Block win;
     private boolean gameEnd;
+    private Thread thread;
+    private Animate animate;
 
     public BlockBreakerPanel() {
+    }
 
-        this.paddle = new Block(175, 480, 150, 25, "resources/paddle.png");
+    public void buildGame() {
+        this.blocks = new ArrayList<>();
+        this.ballList = new ArrayList<>();
+        this.powerUpList = new ArrayList<>();
+        this.thread = new Thread();
+
+        this.paddle = new Block(175, 480, 150, 2, "resources/paddle.png");
         this.gameOver = new Block(100, 150, 300, 150, "resources/gameover.png");
         this.win = new Block(100, 150, 300, 150, "resources/win.png");
         this.win.destroyed = true;
@@ -38,25 +47,23 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         for (int i = 0; i < 8; i++)
             blocks.add(new Block((i * 60 + 2), 75, 60, 25, "resources/red.png"));
 
-
         Random random = new Random();
-        blocks.get(random.nextInt(32)).powerup = true;
-        blocks.get(random.nextInt(32)).powerup = true;
-        blocks.get(random.nextInt(32)).powerup = true;
-        blocks.get(random.nextInt(32)).powerup = true;
-        blocks.get(random.nextInt(32)).powerup = true;
+        for (int i = 0; i < 5; i++) {
+            blocks.get(random.nextInt(32)).isBlockPoweredUp = true;
+        }
 
-        ball.add(new Block(237, 437, 30, 25, "resources/ball.png"));
+        ballList.add(new Block(237, 437, 25, 25, "resources/ball.png"));
+        this.gameEnd = false;
         addKeyListener(this);
         setFocusable(true);
-        this.gameEnd = false;
     }
+
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         for (Block block : this.blocks) block.draw(g, this);
-        for (Block block : this.ball) block.draw(g, this);
-        for (Block block : this.powerUp) block.draw(g, this);
+        for (Block block : this.ballList) block.draw(g, this);
+        for (Block block : this.powerUpList) block.draw(g, this);
         this.paddle.draw(g, this);
         this.gameOver.draw(g, this);
         this.win.draw(g, this);
@@ -66,7 +73,7 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         addBall();
         gameOver();
         win();
-        for (Block bal : ball) {
+        for (Block bal : ballList) {
             setBallMoveByX(bal);
             setBallMoveByY(bal);
             blocksIntersectionByBallXY(bal, blocks);
@@ -74,10 +81,10 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         repaint();
     }
 
-    private void setBallMoveByY(Block bal) {
-        bal.y += bal.dy;
-        if (bal.y < 0 || bal.intersects(paddle)) bal.dy *= -1;
-        if (bal.y > getHeight() + 1 && !bal.destroyed) bal.destroyed = true;
+    private void setBallMoveByY(Block ball) {
+        ball.y += ball.dy;
+        if (ball.y < 0 || ball.intersects(paddle)) ball.dy *= -1;
+        if (ball.y > getHeight() + 1 && !ball.destroyed) ball.destroyed = true;
     }
 
     private void setBallMoveByX(Block bal) {
@@ -101,7 +108,7 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
     }
 
     private void gameOver() {
-        if (blockCount(ball) == 0 && !this.gameEnd) {
+        if (blockCount(ballList) == 0 && !this.gameEnd) {
             this.gameOver.destroyed = false;
             this.paddle.destroyed = true;
         }
@@ -115,18 +122,18 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         }
     }
 
+    private void addExtraPowerUp(Block bl) {
+        if (bl.isBlockPoweredUp) powerUpList.add(new Block(bl.x, bl.y, 25, 19, "resources/extra.png"));
+    }
+
     private void addBall() {
-        for (Block blockPower : powerUp) {
+        for (Block blockPower : powerUpList) {
             blockPower.y += 1;
             if (blockPower.intersects(paddle) && !blockPower.destroyed) {
                 blockPower.destroyed = true;
-                ball.add(new Block(paddle.dx + 75, 437, 30, 25, "resources/ball.png"));
+                ballList.add(new Block(paddle.dx + 75, 437, 25, 30, "resources/ball.png"));
             }
         }
-    }
-
-    private void addExtraPowerUp(Block bl) {
-        if (bl.powerup) powerUp.add(new Block(bl.x, bl.y, 25, 19, "resources/extra.png"));
     }
 
     public int blockCount(List<Block> blocks) {
@@ -141,9 +148,7 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            Animate animate = new Animate(this);
-            Thread thread = new Thread(animate);
-            thread.start();
+            animationStart();
         }
         if (e.getKeyCode() == KeyEvent.VK_LEFT && paddle.x > 0) {
             this.paddle.x -= 25;
@@ -161,4 +166,17 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
     }
+
+    private void animationStart() {
+        if (this.animate == null) this.animate = new Animate(this);
+        if (!this.thread.isAlive()) {
+            this.thread = new Thread(this.animate);
+            this.thread.start();
+        }
+    }
+
+    public boolean isGameOver() {
+        return gameEnd;
+    }
+
 }
