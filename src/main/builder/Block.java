@@ -1,4 +1,4 @@
-package main;
+package main.builder;
 
 import java.awt.*;
 
@@ -9,7 +9,7 @@ public class Block extends Rectangle {
     Rectangle left, right;
 
     boolean destroyed = false;
-    boolean powerup = false;
+    boolean isBlockPoweredUp = false;
 
     public Block(int x, int y, int width, int height, String path) {
         super(x, y, width, height);

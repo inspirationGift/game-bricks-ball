@@ -1,4 +1,4 @@
-package main;
+package main.builder;
 
 
 public class Animate implements Runnable {
@@ -14,11 +14,10 @@ public class Animate implements Runnable {
         while (true) {
             this.panel.update();
             try {
-                Thread.sleep(10);
+                Thread.sleep(12);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-
     }
 }
