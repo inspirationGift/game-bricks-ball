@@ -36,20 +36,17 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         this.powerUpBuilder = new PowerUpBuilder();
         this.ballMover = new BallMover();
 
-
         this.blocks = this.blocksBuilder.getHorizontalBlocksList();
         this.ballList = this.blocksBuilder.getBallList();
         this.paddle = this.blocksBuilder.getPaddle();
         this.winSign = this.blocksBuilder.getWinSign();
         this.gameOverSign = this.blocksBuilder.getGameOverSign();
-        this.gameEnd = false;
 
         this.powerUpList = this.powerUpBuilder.getPowerUpList();
         this.powerUpBuilder.markUpPowerUpBlock(this.blocks, 5);
 
         addKeyListener(this);
         setFocusable(true);
-
     }
 
 
@@ -61,9 +58,7 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         this.paddle.draw(g, this);
         this.gameOverSign.draw(g, this);
         this.winSign.draw(g, this);
-
     }
-
 
     public void update() {
         addPowerUpAction();
@@ -71,37 +66,14 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         win();
         this.ballMover.setHeight(getHeight());
         this.ballMover.setWidth(getWidth());
-
         for (Block ball : this.ballList) {
             this.ballMover.activate(ball, this.paddle);
-//            for (Block block : blocks) {
-//                if (this.ballMover.ballIntersectCenter(ball, block))
-//                    this.powerUpBuilder.setNewPowerUpBlock(block, PowerUpType.ADD_BALL);
-//                if (this.ballMover.ballIntersectLeftAndRight(ball, block))
-//                    this.powerUpBuilder.setNewPowerUpBlock(block, PowerUpType.ADD_BALL);
-//            }
-            blocksIntersectionByBallXY(ball, blocks);
-        }
-
-//
-
-
-        repaint();
-    }
-
-    private void blocksIntersectionByBallXY(Block bal, List<Block> blocks) {
-        for (Block bl : blocks) {
-
-            if ((bl.left.intersects(bal) || bl.right.intersects(bal)) && !bl.destroyed) {
-                bal.dx *= -1;
-                bl.destroyed = true;
-                this.powerUpBuilder.setNewPowerUpBlock(bl, PowerUpType.ADD_BALL);
-            } else if (bl.intersects(bal) && !bl.destroyed) {
-                bal.dy *= -1;
-                bl.destroyed = true;
-                this.powerUpBuilder.setNewPowerUpBlock(bl, PowerUpType.ADD_BALL);
+            for (Block block : this.blocks) {
+                if (this.ballMover.doesBlockToDestroy(ball, block))
+                    this.powerUpBuilder.setNewPowerUpBlock(block, PowerUpType.ADD_BALL);
             }
         }
+        repaint();
     }
 
     private void gameOver() {
@@ -122,7 +94,6 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
     private void addPowerUpAction() {
         PowerUpType powerUpType =
                 this.powerUpBuilder.giveActionIfBlockPowerUpIsIntersect(this.paddle);
-
         switch (powerUpType) {
             case ADD_BALL:
                 this.blocksBuilder.setAdditionalBall();
@@ -133,6 +104,14 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
             case DO_NOTHING:
             default:
                 break;
+        }
+    }
+
+    private void animationStart() {
+        if (this.animate == null) this.animate = new Animate(this);
+        if (this.thread == null || !this.thread.isAlive()) {
+            this.thread = new Thread(this.animate);
+            this.thread.start();
         }
     }
 
@@ -151,18 +130,10 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
     }
 
-    private void animationStart() {
-        if (this.animate == null) this.animate = new Animate(this);
-        if (this.thread == null || !this.thread.isAlive()) {
-            this.thread = new Thread(this.animate);
-            this.thread.start();
-        }
-    }
 }

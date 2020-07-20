@@ -47,7 +47,6 @@ public class PowerUpBuilder {
             blockPower.y += 1;
             if (blockPower.intersects(block) && !blockPower.destroyed) {
                 blockPower.destroyed = true;
-                System.out.println(blockPower.powerUpType);
                 return blockPower.powerUpType;
             }
         }

@@ -43,4 +43,27 @@ public class Block extends Rectangle {
         return res;
     }
 
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+
+    public void setDestroyed(boolean destroyed) {
+        this.destroyed = destroyed;
+    }
+
+    public boolean isBlockPoweredUp() {
+        return isBlockPoweredUp;
+    }
+
+    public void setBlockPoweredUp(boolean blockPoweredUp) {
+        isBlockPoweredUp = blockPoweredUp;
+    }
+
+    public PowerUpType getPowerUpType() {
+        return powerUpType;
+    }
+
+    public void setPowerUpType(PowerUpType powerUpType) {
+        this.powerUpType = powerUpType;
+    }
 }
