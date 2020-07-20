@@ -21,7 +21,6 @@ public class MainFrame {
         this.restart.setFocusable(false);
         this.restart.addActionListener(e -> reLaunch());
         this.panel = new BlockBreakerPanel();
-        this.panel.buildGame();
         this.frame.getContentPane().add(BorderLayout.CENTER, this.panel);
         this.frame.getContentPane().add(BorderLayout.SOUTH, restart);
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

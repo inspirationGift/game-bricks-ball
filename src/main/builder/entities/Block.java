@@ -1,15 +1,19 @@
 package main.builder.entities;
 
+import main.builder.addons.PowerUpType;
+
 import java.awt.*;
+import java.util.Random;
 
 public class Block extends Rectangle {
     Image pic;
-    public int dx = 3;
-    public int dy = -3;
+    public int dx;
+    public int dy;
     public Rectangle left, right;
 
     public boolean destroyed = false;
     public boolean isBlockPoweredUp = false;
+    public PowerUpType powerUpType = PowerUpType.DO_NOTHING;
 
     public Block(int x, int y, int width, int height, String path) {
         super(x, y, width, height);
@@ -21,11 +25,22 @@ public class Block extends Rectangle {
 
         left = new Rectangle(x - 1, y, 1, height);
         right = new Rectangle(x + width + 1, y, 1, height);
+        this.dx = randomInRange(-3, 3);
+        this.dy = randomInRange(-5, 0);
     }
 
     public void draw(Graphics graphics, Component component) {
         if (!destroyed)
             graphics.drawImage(this.pic, this.x, this.y, this.width, this.height, component);
+    }
+
+    private int randomInRange(int min, int max) {
+        Random r = new Random();
+        int res = 0;
+        do {
+            res = r.nextInt((max - min) + 1) + min;
+        } while (res == 0);
+        return res;
     }
 
 }

@@ -1,5 +1,8 @@
 package main.builder;
 
+import main.builder.addons.PowerUpBuilder;
+import main.builder.addons.PowerUpType;
+import main.builder.entities.BallMover;
 import main.builder.entities.BlocksBuilder;
 import main.builder.entities.Block;
 
@@ -7,13 +10,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class BlockBreakerPanel extends JPanel implements KeyListener {
 
     private BlocksBuilder blocksBuilder;
+    private PowerUpBuilder powerUpBuilder;
+    private BallMover ballMover;
     private List<Block> blocks;
     private List<Block> ballList;
     private List<Block> powerUpList;
@@ -25,12 +28,15 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
     private Animate animate;
 
     public BlockBreakerPanel() {
+        buildGame();
     }
 
     public void buildGame() {
-        this.thread = new Thread();
-
         this.blocksBuilder = new BlocksBuilder();
+        this.powerUpBuilder = new PowerUpBuilder();
+        this.ballMover = new BallMover();
+
+
         this.blocks = this.blocksBuilder.getHorizontalBlocksList();
         this.ballList = this.blocksBuilder.getBallList();
         this.paddle = this.blocksBuilder.getPaddle();
@@ -38,14 +44,12 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         this.gameOverSign = this.blocksBuilder.getGameOverSign();
         this.gameEnd = false;
 
-        this.powerUpList = new ArrayList<>();
-
-        Random random = new Random();
-        for (int i = 0; i < 5; i++)
-            blocks.get(random.nextInt(32)).isBlockPoweredUp = true;
+        this.powerUpList = this.powerUpBuilder.getPowerUpList();
+        this.powerUpBuilder.markUpPowerUpBlock(this.blocks, 5);
 
         addKeyListener(this);
         setFocusable(true);
+
     }
 
 
@@ -57,42 +61,45 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         this.paddle.draw(g, this);
         this.gameOverSign.draw(g, this);
         this.winSign.draw(g, this);
+
     }
+
 
     public void update() {
-        addBall();
+        addPowerUpAction();
         gameOver();
         win();
-        for (Block bal : ballList) {
-            setBallMoveByX(bal);
-            setBallMoveByY(bal);
-            blocksIntersectionByBallXY(bal, blocks);
+        this.ballMover.setHeight(getHeight());
+        this.ballMover.setWidth(getWidth());
+
+        for (Block ball : this.ballList) {
+            this.ballMover.activate(ball, this.paddle);
+//            for (Block block : blocks) {
+//                if (this.ballMover.ballIntersectCenter(ball, block))
+//                    this.powerUpBuilder.setNewPowerUpBlock(block, PowerUpType.ADD_BALL);
+//                if (this.ballMover.ballIntersectLeftAndRight(ball, block))
+//                    this.powerUpBuilder.setNewPowerUpBlock(block, PowerUpType.ADD_BALL);
+//            }
+            blocksIntersectionByBallXY(ball, blocks);
         }
+
+//
+
+
         repaint();
-    }
-
-    private void setBallMoveByY(Block ball) {
-        ball.y += ball.dy;
-        if (ball.y < 0 || ball.intersects(paddle)) ball.dy *= -1;
-        if (ball.y > getHeight() + 1 && !ball.destroyed) ball.destroyed = true;
-    }
-
-    private void setBallMoveByX(Block bal) {
-        bal.x += bal.dx;
-        int size = 25;
-        if (bal.x > (getWidth() - size) && (bal.dx > 0) || (bal.x < 0)) bal.dx *= -1;
     }
 
     private void blocksIntersectionByBallXY(Block bal, List<Block> blocks) {
         for (Block bl : blocks) {
+
             if ((bl.left.intersects(bal) || bl.right.intersects(bal)) && !bl.destroyed) {
                 bal.dx *= -1;
                 bl.destroyed = true;
-                addExtraPowerUp(bl);
+                this.powerUpBuilder.setNewPowerUpBlock(bl, PowerUpType.ADD_BALL);
             } else if (bl.intersects(bal) && !bl.destroyed) {
-                bl.destroyed = true;
                 bal.dy *= -1;
-                addExtraPowerUp(bl);
+                bl.destroyed = true;
+                this.powerUpBuilder.setNewPowerUpBlock(bl, PowerUpType.ADD_BALL);
             }
         }
     }
@@ -112,17 +119,20 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         }
     }
 
-    private void addExtraPowerUp(Block bl) {
-        if (bl.isBlockPoweredUp) powerUpList.add(new Block(bl.x, bl.y, 25, 19, "resources/extra.png"));
-    }
+    private void addPowerUpAction() {
+        PowerUpType powerUpType =
+                this.powerUpBuilder.giveActionIfBlockPowerUpIsIntersect(this.paddle);
 
-    private void addBall() {
-        for (Block blockPower : powerUpList) {
-            blockPower.y += 1;
-            if (blockPower.intersects(paddle) && !blockPower.destroyed) {
-                blockPower.destroyed = true;
+        switch (powerUpType) {
+            case ADD_BALL:
                 this.blocksBuilder.setAdditionalBall();
-            }
+                break;
+            case BALLS_DOUBLE:
+            case BIG_BALL:
+            case ENLARGE_PADDLE:
+            case DO_NOTHING:
+            default:
+                break;
         }
     }
 
@@ -150,7 +160,7 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
 
     private void animationStart() {
         if (this.animate == null) this.animate = new Animate(this);
-        if (!this.thread.isAlive()) {
+        if (this.thread == null || !this.thread.isAlive()) {
             this.thread = new Thread(this.animate);
             this.thread.start();
         }
