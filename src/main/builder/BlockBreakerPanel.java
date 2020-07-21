@@ -1,5 +1,6 @@
 package main.builder;
 
+import main.builder.addons.LevelSettings;
 import main.builder.addons.PowerUpBuilder;
 import main.builder.addons.PowerUpType;
 import main.builder.entities.BallMover;
@@ -26,12 +27,17 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
     private boolean gameEnd;
     private Thread thread;
     private Animate animate;
+    private LevelSettings levelSettings;
+
 
     public BlockBreakerPanel() {
         buildGame();
     }
 
-    public void buildGame() {
+    private void buildGame() {
+        this.levelSettings = new LevelSettings();
+        levelSettings(this.levelSettings);
+
         this.blocksBuilder = new BlocksBuilder();
         this.powerUpBuilder = new PowerUpBuilder();
         this.ballMover = new BallMover();
@@ -43,12 +49,17 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         this.gameOverSign = this.blocksBuilder.getGameOverSign();
 
         this.powerUpList = this.powerUpBuilder.getPowerUpList();
-        this.powerUpBuilder.markUpPowerUpBlock(this.blocks, 5);
+        this.powerUpBuilder.markUpPowerUpBlock(this.blocks, levelSettings.getQuantityOfPowerUps());
 
         addKeyListener(this);
         setFocusable(true);
     }
 
+    public void levelSettings(LevelSettings levelSettings) {
+        levelSettings.setPaddleSpeed(30);
+        levelSettings.setPowerUpType(PowerUpType.ADD_BALL);
+        levelSettings.setQuantityOfPowerUps(10);
+    }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -60,7 +71,7 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
         this.winSign.draw(g, this);
     }
 
-    public void update() {
+    protected void update() {
         addPowerUpAction();
         gameOver();
         win();
@@ -70,7 +81,7 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
             this.ballMover.activate(ball, this.paddle);
             for (Block block : this.blocks) {
                 if (this.ballMover.doesBlockToDestroy(ball, block))
-                    this.powerUpBuilder.setNewPowerUpBlock(block, PowerUpType.ADD_BALL);
+                    this.powerUpBuilder.setNewPowerUpBlock(block, levelSettings.getPowerUpType());
             }
         }
         repaint();
@@ -121,10 +132,10 @@ public class BlockBreakerPanel extends JPanel implements KeyListener {
             animationStart();
         }
         if (e.getKeyCode() == KeyEvent.VK_LEFT && paddle.x > 0) {
-            this.paddle.x -= 25;
+            this.paddle.x -= levelSettings.getPaddleSpeed();
         }
         if (e.getKeyCode() == KeyEvent.VK_RIGHT && paddle.x < (getWidth() - paddle.width)) {
-            this.paddle.x += 25;
+            this.paddle.x += levelSettings.getPaddleSpeed();
         }
     }
 

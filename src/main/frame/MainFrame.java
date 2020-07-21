@@ -1,6 +1,7 @@
 package main.frame;
 
 import main.builder.BlockBreakerPanel;
+import main.builder.Level1;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +21,7 @@ public class MainFrame {
     public void init() {
         this.restart.setFocusable(false);
         this.restart.addActionListener(e -> reLaunch());
-        this.panel = new BlockBreakerPanel();
+        this.panel = new Level1();
         this.frame.getContentPane().add(BorderLayout.CENTER, this.panel);
         this.frame.getContentPane().add(BorderLayout.SOUTH, restart);
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
