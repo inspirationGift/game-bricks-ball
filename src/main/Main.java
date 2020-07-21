@@ -1,6 +1,6 @@
 package main;
 
-import main.frame.MainFrame;
+import main.core.MainFrame;
 
 public class Main {
 
