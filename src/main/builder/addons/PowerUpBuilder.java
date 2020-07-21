@@ -4,6 +4,7 @@ import main.builder.entities.Block;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class PowerUpBuilder {
@@ -16,20 +17,25 @@ public class PowerUpBuilder {
         this.random = new Random();
     }
 
-    public void markUpPowerUpBlock(List<Block> horizontalBlocks, int qImpact) {
+    public void markUpPowerUpBlock(List<Block> horizontalBlocks, Map<PowerUpType, Integer> powerUpTypeIntegerMap) {
         int length = horizontalBlocks.size();
-        Block block;
-        for (int i = 0; i < qImpact; i++) {
-            block = horizontalBlocks.get(this.random.nextInt(length));
-            block.isBlockPoweredUp = true;
-        }
+        Integer reduce = powerUpTypeIntegerMap.values().stream().reduce(0, Integer::sum);
+
+        powerUpTypeIntegerMap.forEach((k, v) -> {
+            for (int i = 0; i < v; i++) {
+                Block block;
+                block = horizontalBlocks.get(this.random.nextInt(length));
+                block.setBlockPoweredUp(true);
+                block.setPowerUpType(k);
+            }
+        });
     }
 
-    public void setNewPowerUpBlock(Block block, PowerUpType type) {
+    public void setNewPowerUpBlock(Block block) {
         Block newBlock;
-        if (block.isBlockPoweredUp) {
-            newBlock = new Block(block.x, block.y, 25, 19, "resources/extra.png");
-            newBlock.powerUpType = type;
+        if (block.isBlockPoweredUp()) {
+            newBlock = new Block(block.x, block.y, 25, 19, block.getPowerUpType().getValue());
+            newBlock.setPowerUpType(block.getPowerUpType());
             this.powerUpList.add(newBlock);
         }
     }
@@ -47,7 +53,7 @@ public class PowerUpBuilder {
             blockPower.y += 1;
             if (blockPower.intersects(block) && !blockPower.destroyed) {
                 blockPower.destroyed = true;
-                return blockPower.powerUpType;
+                return blockPower.getPowerUpType();
             }
         }
         return PowerUpType.DO_NOTHING;

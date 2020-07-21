@@ -1,6 +1,9 @@
 package main.builder.entities;
 
-import java.util.ArrayList;
+import main.builder.addons.PowerUpType;
+import main.utils.Scheduler;
+
+import java.util.*;
 import java.util.List;
 
 public class BlocksBuilder {
@@ -9,13 +12,13 @@ public class BlocksBuilder {
     private Block paddle;
     private Block gameOverSign;
     private Block winSign;
-
+    private int delay;
 
     public BlocksBuilder() {
         this.horizontalBlocksList = new ArrayList<>();
         this.ballList = new ArrayList<>();
         horizontalBlocksBuilder();
-        ballBuilder();
+        createBall(PowerUpType.ADD_BALL);
         paddleBuilder();
         signsBuilder();
     }
@@ -29,12 +32,12 @@ public class BlocksBuilder {
         }
     }
 
-    private void ballBuilder() {
-        ballList.add(new Block(237, 437, 25, 25, "resources/ball.png"));
+    private void createBall(PowerUpType powerUpType) {
+        ballList.add(new Block(237, 437, 25, 25, powerUpType.getAnimate()));
     }
 
     private void paddleBuilder() {
-        this.paddle = new Block(175, 480, 150, 2, "resources/paddle.png");
+        this.paddle = new Block(175, 530, 150, 2, "resources/paddle.png");
     }
 
     private void signsBuilder() {
@@ -73,8 +76,49 @@ public class BlocksBuilder {
         return ballList;
     }
 
-    public void setAdditionalBall() {
-        ballBuilder();
+    public void poweredUPBlocksBuild(PowerUpType powerUpType) {
+        switch (powerUpType) {
+            case ADD_BALL -> createBall(powerUpType);
+            case DOUBLE_BALL -> {
+                int qBall = this.ballList.size();
+                for (int i = 0; i < qBall; i++) {
+                    this.delay += 5000;
+                    createBall(powerUpType);
+                }
+            }
+            case BIG_BALL -> {
+                this.ballList.forEach(ball -> {
+                    if (ball.getPowerUpType() != PowerUpType.BIG_BALL) {
+                        ball.width *= 2;
+                        ball.height *= 2;
+                        ball.setPic(PowerUpType.BIG_BALL);
+                        ball.setPowerUpType(PowerUpType.BIG_BALL);
+                    }
+                });
+                this.delay += 5000;
+                Scheduler.setDelay(this.delay);
+            }
+            case ENLARGE_PADDLE -> {
+                this.paddle.width += this.paddle.width == 150 ? 30 : 0;
+                this.delay += 5000;
+            }
+
+        }
+    }
+
+    public void poweredUpBlockDestroy() {
+        this.ballList.forEach(ball -> {
+            switch (ball.getPowerUpType()) {
+                case BIG_BALL -> {
+                    ball.width /= 2;
+                    ball.height /= 2;
+                    ball.setPic(PowerUpType.ADD_BALL);
+                    ball.setPowerUpType(PowerUpType.ADD_BALL);
+                }
+                case DOUBLE_BALL -> ball.setDestroyed(true);
+            }
+        });
+        this.paddle.width = 150;
     }
 
     public Block getGameOverSign() {
@@ -92,4 +136,5 @@ public class BlocksBuilder {
     public void setWinSign(Block winSign) {
         this.winSign = winSign;
     }
+
 }

@@ -37,7 +37,11 @@ public class BallMover {
     }
 
     private void ballIntersectsFrame(Block ball, Block paddle) {
-        if (ball.y < 0 || ball.intersects(paddle)) ball.dy *= -1;
+        if (ball.y < 0 ||
+                ball.intersects(paddle) ||
+                ball.intersects(paddle.left) ||
+                ball.intersects(paddle.right))
+            ball.dy *= -1;
     }
 
     private boolean ballIntersectsLeftRightBlock(Block ball, Block block) {

@@ -6,14 +6,15 @@ import java.awt.*;
 import java.util.Random;
 
 public class Block extends Rectangle {
-    Image pic;
+    private Image pic;
     public int dx;
     public int dy;
     public Rectangle left, right;
+    String path;
 
     public boolean destroyed = false;
-    public boolean isBlockPoweredUp = false;
-    public PowerUpType powerUpType = PowerUpType.DO_NOTHING;
+    private boolean isBlockPoweredUp = false;
+    private PowerUpType powerUpType = PowerUpType.DO_NOTHING;
 
     public Block(int x, int y, int width, int height, String path) {
         super(x, y, width, height);
@@ -21,7 +22,8 @@ public class Block extends Rectangle {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(path));
+        this.path = path;
+        this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(this.path));
 
         left = new Rectangle(x - 1, y, 1, height);
         right = new Rectangle(x + width + 1, y, 1, height);
@@ -65,5 +67,9 @@ public class Block extends Rectangle {
 
     public void setPowerUpType(PowerUpType powerUpType) {
         this.powerUpType = powerUpType;
+    }
+
+    public void setPic(PowerUpType pic) {
+        this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(pic.getAnimate()));
     }
 }
