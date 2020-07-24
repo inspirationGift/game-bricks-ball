@@ -1,9 +1,9 @@
 package main.builder.entities;
 
 import main.builder.addons.PowerUpType;
+import main.utils.Randomizer;
 
 import java.awt.*;
-import java.util.Random;
 
 public class Block extends Rectangle {
     private Image pic;
@@ -27,22 +27,13 @@ public class Block extends Rectangle {
 
         left = new Rectangle(x - 1, y, 1, height);
         right = new Rectangle(x + width + 1, y, 1, height);
-        this.dx = randomInRange(-3, 3);
-        this.dy = randomInRange(-5, 0);
+        this.dx = Randomizer.randomInRangeNotZero(-3, 3);
+        this.dy = Randomizer.randomInRangeNotZero(-3, 0);
     }
 
     public void draw(Graphics graphics, Component component) {
         if (!destroyed)
             graphics.drawImage(this.pic, this.x, this.y, this.width, this.height, component);
-    }
-
-    private int randomInRange(int min, int max) {
-        Random r = new Random();
-        int res = 0;
-        do {
-            res = r.nextInt((max - min) + 1) + min;
-        } while (res == 0);
-        return res;
     }
 
     public boolean isDestroyed() {

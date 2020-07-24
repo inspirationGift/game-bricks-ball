@@ -12,6 +12,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.List;
 
 public class GamePanel extends JPanel implements KeyListener {
@@ -29,10 +31,32 @@ public class GamePanel extends JPanel implements KeyListener {
     private Thread thread;
     private Animate animate;
     private LevelSettings levelSettings;
+    public boolean changeLevel;
+
+
+    private int score = 0;
+    private PropertyChangeSupport support;
 
 
     public GamePanel() {
         buildGame();
+        this.support = new PropertyChangeSupport(this);
+        this.changeLevel = false;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        int odlValue = this.score;
+        this.score += score;
+        support.firePropertyChange("ScoreValue", odlValue, this.score);
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        this.support.addPropertyChangeListener(listener);
     }
 
     private void buildGame() {
@@ -48,7 +72,6 @@ public class GamePanel extends JPanel implements KeyListener {
         this.paddle = this.blocksBuilder.getPaddle();
         this.winSign = this.blocksBuilder.getWinSign();
         this.gameOverSign = this.blocksBuilder.getGameOverSign();
-
         this.powerUpList = this.powerUpBuilder.getPowerUpList();
         this.powerUpBuilder.markUpPowerUpBlock(this.blocks, levelSettings.getPowerUps());
 
@@ -56,16 +79,22 @@ public class GamePanel extends JPanel implements KeyListener {
         setFocusable(true);
     }
 
+
     public void levelSettings(LevelSettings levelSettings) {
         levelSettings.setPaddleSpeed(30);
-        levelSettings.setPowerUps(PowerUpType.ADD_BALL, 10);
+        levelSettings.setPowerUps(PowerUpType.ADD_BALL, 1);
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         for (Block block : this.blocks) block.draw(g, this);
-        for (Block block : this.ballList) block.draw(g, this);
-        for (Block block : this.powerUpList) block.draw(g, this);
+        for (Block block : this.ballList) {
+            synchronized (block) {
+                block.draw(g, this);
+            }
+        }
+        for (Block block : this.powerUpList)
+            block.draw(g, this);
         this.paddle.draw(g, this);
         this.gameOverSign.draw(g, this);
         this.winSign.draw(g, this);
@@ -75,18 +104,20 @@ public class GamePanel extends JPanel implements KeyListener {
         addPowerUpAction();
         gameOver();
         win();
+
         this.ballMover.setHeight(getHeight());
         this.ballMover.setWidth(getWidth());
         for (Block ball : this.ballList) {
             this.ballMover.activate(ball, this.paddle);
             for (Block block : this.blocks) {
-                if (this.ballMover.doesBlockToDestroy(ball, block))
+                if (this.ballMover.doesBlockToDestroy(ball, block)) {
                     this.powerUpBuilder.setNewPowerUpBlock(block);
+                    setScore(5);
+                }
             }
         }
         if (Scheduler.isDelayed())
             this.blocksBuilder.poweredUpBlockDestroy();
-
         repaint();
     }
 
@@ -102,23 +133,14 @@ public class GamePanel extends JPanel implements KeyListener {
             this.winSign.destroyed = false;
             this.paddle.destroyed = true;
             this.gameEnd = true;
+            this.changeLevel = true;
         }
     }
 
     private void addPowerUpAction() {
-        PowerUpType powerUpType =
-                this.powerUpBuilder.giveActionIfBlockPowerUpIsIntersect(this.paddle);
-        switch (powerUpType) {
-            case ADD_BALL:
-            case DOUBLE_BALL:
-            case BIG_BALL:
-                this.blocksBuilder.poweredUPBlocksBuild(powerUpType);
-                break;
-            case ENLARGE_PADDLE:
-            case DO_NOTHING:
-            default:
-                break;
-        }
+        PowerUpType powerUpType = this.powerUpBuilder.giveActionIfBlockPowerUpIsIntersect(this.paddle);
+        if (powerUpType != PowerUpType.DO_NOTHING)
+            this.blocksBuilder.poweredUPBlocksBuild(powerUpType);
     }
 
     private void animationStart() {
@@ -149,5 +171,14 @@ public class GamePanel extends JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
     }
+
+    public boolean isChangeLevel() {
+        return changeLevel;
+    }
+
+    public void setChangeLevel(boolean changeLevel) {
+        this.changeLevel = changeLevel;
+    }
+
 
 }

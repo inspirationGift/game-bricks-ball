@@ -14,6 +14,8 @@ public class BallMover {
         setBallMoveByY(ball);
         ballIntersectsFrame(ball, bottom);
         doesBallDestroy(ball);
+
+
     }
 
     public boolean doesBlockToDestroy(Block ball, Block block) {
@@ -21,7 +23,7 @@ public class BallMover {
     }
 
     public void doesBallDestroy(Block ball) {
-        if (ball.y > this.height + 2 && !ball.isDestroyed())
+        if (ball.y > this.height + 1 && !ball.isDestroyed())
             ball.setDestroyed(true);
     }
 
