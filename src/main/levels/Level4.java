@@ -1,17 +1,15 @@
 package main.levels;
 
-import main.core.LevelSettings;
+import main.builder.addons.PowerUpType;
 import main.core.GamePanel;
+import main.core.LevelSettings;
 
-public class Level1 extends GamePanel {
-
-    public Level1() {
+public class Level4 extends GamePanel {
+    public Level4() {
         super();
     }
 
-
-
-    //    @Override
+//    @Override
 //    public void levelSettings(LevelSettings levelSettings) {
 //        levelSettings.setPaddleSpeed(45);
 //        levelSettings.setPowerUps(PowerUpType.ADD_BALL, 10);

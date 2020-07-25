@@ -9,12 +9,12 @@ public class Level2 extends GamePanel {
         super();
     }
 
-    @Override
-    public void levelSettings(LevelSettings levelSettings) {
-        levelSettings.setPaddleSpeed(45);
-        levelSettings.setPowerUps(PowerUpType.ADD_BALL, 10);
-        levelSettings.setPowerUps(PowerUpType.DOUBLE_BALL, 10);
-        levelSettings.setPowerUps(PowerUpType.BIG_BALL, 10);
-        levelSettings.setPowerUps(PowerUpType.ENLARGE_PADDLE, 2);
-    }
+//    @Override
+//    public void levelSettings(LevelSettings levelSettings) {
+//        levelSettings.setPaddleSpeed(45);
+//        levelSettings.setPowerUps(PowerUpType.ADD_BALL, 10);
+//        levelSettings.setPowerUps(PowerUpType.DOUBLE_BALL, 10);
+//        levelSettings.setPowerUps(PowerUpType.BIG_BALL, 10);
+//        levelSettings.setPowerUps(PowerUpType.ENLARGE_PADDLE, 2);
+//    }
 }

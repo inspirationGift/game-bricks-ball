@@ -1,5 +1,9 @@
 package main.builder.entities;
 
+import main.builder.addons.BlockColor;
+import main.builder.addons.PowerUpType;
+import main.builder.entities.block.Block;
+
 public class BallMover {
 
     private int height;
@@ -12,13 +16,11 @@ public class BallMover {
     public void activate(Block ball, Block bottom) {
         setBallMoveByX(ball);
         setBallMoveByY(ball);
-        ballIntersectsFrame(ball, bottom);
+        ballIntersectPaddle(ball, bottom);
         doesBallDestroy(ball);
-
-
     }
 
-    public boolean doesBlockToDestroy(Block ball, Block block) {
+    public boolean isBlockToDestroyByBlockIntersection(Block ball, Block block) {
         return ballIntersectsBlock(ball, block) || ballIntersectsLeftRightBlock(ball, block);
     }
 
@@ -38,32 +40,45 @@ public class BallMover {
         ball.y += ball.dy;
     }
 
-    private void ballIntersectsFrame(Block ball, Block paddle) {
-        if (ball.y < 0 ||
-                ball.intersects(paddle) ||
-                ball.intersects(paddle.left) ||
-                ball.intersects(paddle.right))
+    private void ballIntersectPaddle(Block ball, Block paddle) {
+        if ((ball.y < 0) || ball.intersects(paddle)) {
             ball.dy *= -1;
+        }
+        if (ball.intersects(paddle.x, paddle.y, 1, paddle.height) ||
+                ball.intersects(paddle.x + paddle.width, paddle.y, 1, paddle.height)) {
+            ball.dx *= -1;
+            ball.dy *= -1;
+        }
+    }
+
+    private void blockDestroyer(Block ball, Block block) {
+        int i = block.getqHits() - (ball.getPowerUpType() == PowerUpType.BIG_BALL ? 2 : 1);
+        if (i < 1) {
+            block.setDestroyed(true);
+        }
+        block.setqHits(i);
+        for (BlockColor value : BlockColor.values()) {
+            if (value.getRateTransition() == i) block.setPic(value);
+        }
     }
 
     private boolean ballIntersectsLeftRightBlock(Block ball, Block block) {
-        boolean flag = false;
         if ((block.left.intersects(ball) || block.right.intersects(ball)) && !block.destroyed) {
             ball.dx *= -1;
-            flag = true;
-            block.setDestroyed(true);
+            blockDestroyer(ball, block);
+            return true;
         }
-        return flag;
+        return false;
+
     }
 
     private boolean ballIntersectsBlock(Block ball, Block block) {
-        boolean flag = false;
         if (block.intersects(ball) && !block.destroyed) {
             ball.dy *= -1;
-            block.setDestroyed(true);
-            flag = true;
+            blockDestroyer(ball, block);
+            return true;
         }
-        return flag;
+        return false;
     }
 
     public Block getIntersectedBlock() {

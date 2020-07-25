@@ -1,24 +1,32 @@
 package main.builder.entities;
 
-import javax.security.auth.callback.Callback;
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 
-public class HeaderScorePanel extends JPanel {
+public class ScorePanel extends JPanel {
 
     public JButton next;
     public JButton restart;
     private JTextArea ta;
     private FlowLayout layout;
 
-    public int levelScore;
-    public int gameScore;
-    public int level;
-    public int life;
+    public int gameScoreText;
+    public int levelText;
+    public int lifeText;
 
 
-    public HeaderScorePanel() {
+    public int getLife() {
+        return lifeText;
+    }
+
+
+    public void setLife(int lifeText) {
+        this.lifeText = lifeText;
+    }
+
+
+    public ScorePanel() {
         this.restart = new JButton("Restart");
         this.next = new JButton("Next");
         this.ta = new JTextArea();
@@ -26,11 +34,16 @@ public class HeaderScorePanel extends JPanel {
         setPanel();
     }
 
-    public void setScore(PropertyChangeEvent evt) {
-        this.levelScore = (int) evt.getNewValue();
-        this.gameScore += (int) evt.getNewValue() - (int) evt.getOldValue();
-        this.ta.setText("Level #" + this.level + "  Score:  " + this.gameScore + " Life:  " + this.life);
+    public void update() {
+        this.ta.setText("Level #" + this.levelText + "  Score:  " + this.gameScoreText + " Life:  " + this.lifeText);
     }
+
+    public void setScore(PropertyChangeEvent evt) {
+        this.gameScoreText += ((int) evt.getNewValue() - (int) evt.getOldValue());
+        if (this.gameScoreText % 100 == 0) this.lifeText += 1;
+        this.ta.setText("Level #" + this.levelText + "  Score:  " + this.gameScoreText + " Life:  " + this.lifeText);
+    }
+
 
     private void setPanel() {
         this.ta.setEditable(false);
@@ -41,23 +54,10 @@ public class HeaderScorePanel extends JPanel {
         this.next.setVisible(true);
         setLayout(layout);
         this.layout.setAlignment(FlowLayout.LEADING);
-        this.ta.setText("Level #" + this.level + "  Score:  " + this.gameScore + " Life:  " + this.life);
+        this.ta.setText("Level #" + this.levelText + "  Score:  " + this.gameScoreText + " Life:  " + this.lifeText);
         add(this.restart);
         add(this.next);
         add(this.ta);
     }
-
-    public boolean addListeners(boolean changeLevel) {
-        var ref = new Object() {
-            boolean val = false;
-        };
-
-        this.restart.addActionListener(e -> {
-            this.level = 0;
-            ref.val = true;
-        });
-        return ref.val;
-    }
-
 
 }

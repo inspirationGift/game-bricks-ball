@@ -1,5 +1,6 @@
-package main.builder.entities;
+package main.builder.entities.block;
 
+import main.builder.addons.BlockColor;
 import main.builder.addons.PowerUpType;
 import main.utils.Randomizer;
 
@@ -10,25 +11,32 @@ public class Block extends Rectangle {
     public int dx;
     public int dy;
     public Rectangle left, right;
-    String path;
-
     public boolean destroyed = false;
     private boolean isBlockPoweredUp = false;
     private PowerUpType powerUpType = PowerUpType.DO_NOTHING;
+    private int qHits;
+    private String str;
 
-    public Block(int x, int y, int width, int height, String path) {
+
+    public Block(int x, int y, int width, int height, Object path) {
         super(x, y, width, height);
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.path = path;
-        this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(this.path));
 
-        left = new Rectangle(x - 1, y, 1, height);
-        right = new Rectangle(x + width + 1, y, 1, height);
-        this.dx = Randomizer.randomInRangeNotZero(-3, 3);
-        this.dy = Randomizer.randomInRangeNotZero(-3, 0);
+        if (path instanceof BlockColor) {
+            this.str = ((BlockColor) path).getPic();
+            this.qHits = ((BlockColor) path).getqHits();
+        } else if ((path instanceof String)) {
+            this.str = (String) path;
+        }
+
+        this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(str));
+        this.left = new Rectangle(x - 1, y, 1, height);
+        this.right = new Rectangle(x + width + 1, y, 1, height);
+        this.dx = Randomizer.randomInRangeNotZero(-5, 5);
+        this.dy = Randomizer.randomInRangeNotZero(-5, 0);
     }
 
     public void draw(Graphics graphics, Component component) {
@@ -63,4 +71,17 @@ public class Block extends Rectangle {
     public void setPic(PowerUpType pic) {
         this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(pic.getAnimate()));
     }
+
+    public void setPic(BlockColor color) {
+        this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(color.getPic()));
+    }
+
+    public int getqHits() {
+        return qHits;
+    }
+
+    public void setqHits(int qHits) {
+        this.qHits = qHits;
+    }
+
 }

@@ -1,6 +1,7 @@
 package main.core;
 
 import main.builder.addons.PowerUpType;
+import main.builder.entities.block.BlockSettings;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,6 +10,16 @@ public class LevelSettings {
 
     private Map<PowerUpType, Integer> powerUps;
     private int paddleSpeed;
+    private BlockSettings blockSettings;
+
+
+    public BlockSettings getBlockSettings() {
+        return blockSettings;
+    }
+
+    public void setBlockSettings(BlockSettings blockSettings) {
+        this.blockSettings = blockSettings;
+    }
 
     public LevelSettings() {
         this.powerUps = new HashMap();

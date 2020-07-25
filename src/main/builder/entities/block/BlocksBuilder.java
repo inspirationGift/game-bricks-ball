@@ -1,7 +1,8 @@
-package main.builder.entities;
+package main.builder.entities.block;
 
+import main.builder.addons.BlockColor;
 import main.builder.addons.PowerUpType;
-import main.utils.BlockLocation;
+import main.builder.addons.ColorDistributor;
 import main.utils.Scheduler;
 
 import java.util.*;
@@ -14,35 +15,43 @@ public class BlocksBuilder {
     private Block gameOverSign;
     private Block winSign;
 
-    public BlocksBuilder() {
+    public BlocksBuilder(BlockSettings blockSettings) {
         this.horizontalBlocksList = new ArrayList<>();
         this.ballList = new ArrayList<>();
-        horizontalBlocksBuilder(32, 8, 25, true);
-        createBall(PowerUpType.ADD_BALL);
+        horizontalBlocksBuilder(blockSettings);
         paddleBuilder();
+        createBall(PowerUpType.ADD_BALL);
         signsBuilder();
     }
 
-    private void horizontalBlocksBuilder(int qBlocks, int qBlocksInRow, int rowStep, boolean isEquallyDistribute) {
-        BlockLocation location = new BlockLocation(qBlocks, isEquallyDistribute);
-        location.setRowMap(rowStep, qBlocksInRow);
+    private void horizontalBlocksBuilder(BlockSettings blockSettings) {
+        int qBlocks = blockSettings.getqBlocks();
+        int rowStep = blockSettings.getRowStep();
+        int qBlocksInRow = blockSettings.getqBlocksInRow();
+        boolean isEquallyDistribute = blockSettings.isEquallyDistribute();
 
+        ColorDistributor location = new ColorDistributor(qBlocks, isEquallyDistribute);
+        location.setRowMap(rowStep, qBlocksInRow);
         int u = 0;
         for (int i = 0; i < qBlocks; i++) {
             Integer y = location.pullRowFromRowMap();
-            String color = location.pullRowFromColorMap().getPic();
+            BlockColor color = location.pullRowFromColorMap(); //random color
             if (u == qBlocksInRow) u = 0;
             horizontalBlocksList.add(new Block((u * 60 + 2), y, 60, 25, color));
             u++;
         }
     }
 
-    private void createBall(PowerUpType powerUpType) {
-        ballList.add(new Block(237, 500, 25, 25, powerUpType.getAnimate()));
+    private void colorQuantityHits(BlockColor color) {
+
+    }
+
+    public void createBall(PowerUpType powerUpType) {
+        ballList.add(new Block((this.paddle.x + paddle.width / 2), 500, 25, 25, powerUpType.getAnimate()));
     }
 
     private void paddleBuilder() {
-        this.paddle = new Block(175, 530, 150, 2, "resources/blocks/paddle.png");
+        this.paddle = new Block(175, 530, 150, 3, "resources/blocks/paddle.png");
     }
 
     private void signsBuilder() {

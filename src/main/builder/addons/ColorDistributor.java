@@ -1,12 +1,12 @@
-package main.utils;
+package main.builder.addons;
 
 
-import main.builder.addons.BlockColor;
+import main.utils.Randomizer;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class BlockLocation {
+public class ColorDistributor {
 
     private int length;
     private int qUncoloredBlocks;
@@ -31,7 +31,7 @@ public class BlockLocation {
     private Map<Integer, Integer> rowSizer;
     private int q;
 
-    public BlockLocation(int quantity, boolean isEqualDistribution) {
+    public ColorDistributor(int quantity, boolean isEqualDistribution) {
         this.rowSizer = new HashMap<>();
         this.mapColor = new HashMap<>();
         this.q = quantity;

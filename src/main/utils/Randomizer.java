@@ -15,6 +15,10 @@ public class Randomizer {
         return res;
     }
 
+    public static int random(int i) {
+        return r.nextInt(i);
+    }
+
     public static int randomInRange(int min, int max) {
         return r.nextInt((max - min) + 1) + min;
     }

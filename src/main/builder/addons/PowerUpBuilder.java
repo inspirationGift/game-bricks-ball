@@ -1,6 +1,7 @@
 package main.builder.addons;
 
-import main.builder.entities.Block;
+import main.builder.entities.block.Block;
+import main.utils.Randomizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,22 +10,19 @@ import java.util.Random;
 
 public class PowerUpBuilder {
     private List<Block> powerUpList;
-    private Random random;
-
 
     public PowerUpBuilder() {
         this.powerUpList = new ArrayList<>();
-        this.random = new Random();
     }
 
     public void markUpPowerUpBlock(List<Block> horizontalBlocks, Map<PowerUpType, Integer> powerUpTypeIntegerMap) {
         int length = horizontalBlocks.size();
-        Integer reduce = powerUpTypeIntegerMap.values().stream().reduce(0, Integer::sum);
+//        Integer reduce = powerUpTypeIntegerMap.values().stream().reduce(0, Integer::sum);
 
         powerUpTypeIntegerMap.forEach((k, v) -> {
             for (int i = 0; i < v; i++) {
                 Block block;
-                block = horizontalBlocks.get(this.random.nextInt(length));
+                block = horizontalBlocks.get(Randomizer.random(length));
                 block.setBlockPoweredUp(true);
                 block.setPowerUpType(k);
             }
@@ -34,6 +32,7 @@ public class PowerUpBuilder {
     public void setNewPowerUpBlock(Block block) {
         Block newBlock;
         if (block.isBlockPoweredUp()) {
+            block.setBlockPoweredUp(false);
             newBlock = new Block(block.x, block.y, 25, 19, block.getPowerUpType().getValue());
             newBlock.setPowerUpType(block.getPowerUpType());
             this.powerUpList.add(newBlock);
@@ -48,7 +47,7 @@ public class PowerUpBuilder {
         this.powerUpList = powerUpList;
     }
 
-    public PowerUpType giveActionIfBlockPowerUpIsIntersect(Block block) {
+    public PowerUpType giveActionIfBlockPowerUpIsIntersected(Block block) {
         for (Block blockPower : this.powerUpList) {
             blockPower.y += 1;
             if (blockPower.intersects(block) && !blockPower.destroyed) {
