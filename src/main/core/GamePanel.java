@@ -1,11 +1,10 @@
 package main.core;
 
-import main.builder.entities.Animate;
-import main.builder.addons.PowerUpBuilder;
-import main.builder.addons.PowerUpType;
-import main.builder.entities.BallMover;
-import main.builder.entities.block.BlocksBuilder;
-import main.builder.entities.block.Block;
+import main.builder.entities.service.Animate;
+import main.builder.addons.bonus.BonusType;
+import main.builder.entities.service.BallMover;
+import main.builder.entities.blocks.BlocksBuilder;
+import main.builder.entities.blocks.Block;
 import main.utils.Scheduler;
 
 import javax.swing.*;
@@ -14,18 +13,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Iterator;
 import java.util.List;
+
 
 public class GamePanel extends JPanel implements KeyListener {
 
-    private PowerUpBuilder powerUpBuilder;
+    private List<Block> bonusList;
     public BlocksBuilder blocksBuilder;
 
     private BallMover ballMover;
     private List<Block> blocks;
     private List<Block> ballList;
-    private List<Block> powerUpList;
     private Block paddle;
     private Block gameOverSign;
     private Block winSign;
@@ -36,47 +34,48 @@ public class GamePanel extends JPanel implements KeyListener {
     public int gameOverCount;
     private PropertyChangeSupport support;
     private int score;
+    public boolean pauseFlag = false;
 
-    public GamePanel() {
-        this.ls = levelSetUp();
-        buildGame();
+    public GamePanel(LevelSettings levelSettings) {
         this.support = new PropertyChangeSupport(this);
+        buildGame(levelSettings);
     }
 
-    public LevelSettings levelSetUp() {
-        return new LevelSettings();
-    }
-
-    private void buildGame() {
-        this.blocksBuilder = new BlocksBuilder(this.ls.getBlockSettings());
-        this.powerUpBuilder = new PowerUpBuilder();
+    public void buildGame(LevelSettings levelSettings) {
+        this.score = 0;
+        this.ls = levelSettings;
+        this.blocksBuilder = new BlocksBuilder(ls);
+        this.bonusList = this.blocksBuilder.getBonuses();
         this.ballMover = new BallMover();
         this.blocks = this.blocksBuilder.getHorizontalBlocksList();
         this.ballList = this.blocksBuilder.getBallList();
         this.paddle = this.blocksBuilder.getPaddle();
         this.winSign = this.blocksBuilder.getWinSign();
         this.gameOverSign = this.blocksBuilder.getGameOverSign();
-        this.powerUpList = this.powerUpBuilder.getPowerUpList();
-        this.powerUpBuilder.markUpPowerUpBlock(this.blocks, ls.getPowerUps());
+
         addKeyListener(this);
         setFocusable(true);
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+
         for (Block block : this.ballList) {
             synchronized (block) {
                 block.draw(g, this);
             }
         }
-        for (Block block : this.blocks) block.draw(g, this);
-        Iterator<Block> iterator = this.powerUpList.iterator();
-        synchronized (iterator) {
-            while (iterator.hasNext()) {
-                Block powers = iterator.next();
-                powers.draw(g, this);
+        for (Block block : this.blocks) {
+            synchronized (block) {
+                block.draw(g, this);
             }
         }
+        for (Block block : this.bonusList) {
+            synchronized (block) {
+                block.draw(g, this);
+            }
+        }
+
         this.paddle.draw(g, this);
         this.gameOverSign.draw(g, this);
         this.winSign.draw(g, this);
@@ -85,20 +84,26 @@ public class GamePanel extends JPanel implements KeyListener {
     public void update() {
         this.ballMover.setHeight(getHeight());
         this.ballMover.setWidth(getWidth());
+
         for (Block ball : this.ballList) {
             this.ballMover.activate(ball, this.paddle);
+
             for (Block block : this.blocks) {
                 if (isBlockIntersected(ball, block)) {
                     setScore(5);
+                    if (block.hasBlockBonus()) {
+                        blocksBuilder.setBonusBlock(block);
+                    }
                 }
             }
         }
-        if (Scheduler.isDelayed()) this.blocksBuilder.poweredUpBlockDestroy();
-        addPowerUpAction();
+        if (Scheduler.isDelayed()) this.blocksBuilder.bonusBlockDestroy();
+        synchronized (thread) {
+            addBonusAction();
+        }
         gameOver(1);
         this.isWon = win();
         repaint();
-
     }
 
     private void setScore(int score) {
@@ -115,7 +120,7 @@ public class GamePanel extends JPanel implements KeyListener {
 
     private boolean isBlockIntersected(Block ball, Block block) {
         if (this.ballMover.isBlockToDestroyByBlockIntersection(ball, block)) {
-            this.powerUpBuilder.setNewPowerUpBlock(block);
+            this.blocksBuilder.setBonusBlock(block);
             return true;
         }
         return false;
@@ -134,13 +139,14 @@ public class GamePanel extends JPanel implements KeyListener {
     }
 
     public void stopGame() {
-        this.animate.flag = false;
+        this.pauseFlag = false;
+        this.animate.setFlag();
     }
 
     public void continueGame() {
         this.gameOverCount = 0;
         this.paddle.x = 175;
-        this.blocksBuilder.createBall(PowerUpType.ADD_BALL);
+        this.blocksBuilder.createBall(BonusType.ADD_BALL);
         this.gameOverSign.destroyed = true;
         this.paddle.destroyed = false;
         this.isWon = false;
@@ -155,15 +161,15 @@ public class GamePanel extends JPanel implements KeyListener {
         return false;
     }
 
-    private void addPowerUpAction() {
-        PowerUpType powerUpType = this.powerUpBuilder.giveActionIfBlockPowerUpIsIntersected(this.paddle);
-        if (powerUpType != PowerUpType.DO_NOTHING)
-            this.blocksBuilder.poweredUPBlocksBuild(powerUpType);
+    private void addBonusAction() {
+        this.blocksBuilder.giveActionIfBonusIsIntersected(this.paddle);
     }
 
     private void animationStart() {
-        if (this.animate == null) this.animate = new Animate(this);
-        else this.animate.flag = true;
+        if (this.animate == null)
+            this.animate = new Animate(this);
+        else
+            this.animate.setFlag();
         if (this.thread == null || !this.thread.isAlive()) {
             this.thread = new Thread(this.animate);
             this.thread.start();
@@ -189,6 +195,14 @@ public class GamePanel extends JPanel implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
+    }
+
+    public LevelSettings getLs() {
+        return ls;
+    }
+
+    public void setLs(LevelSettings ls) {
+        this.ls = ls;
     }
 }
 

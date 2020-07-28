@@ -1,6 +1,5 @@
 package main.core;
 
-import main.builder.entities.ScorePanel;
 import main.levels.Levels;
 
 import javax.swing.*;
@@ -9,7 +8,8 @@ import java.awt.*;
 public class MainFrame {
 
     private final JFrame frame;
-    private Levels game;
+    private Levels levels;
+    private GamePanel game;
     private ScorePanel scorePanel;
 
     public MainFrame() {
@@ -30,11 +30,13 @@ public class MainFrame {
     }
 
     private void newGame() {
-        this.game = new Levels(this.scorePanel.levelText);
+
+        this.levels = new Levels(this.scorePanel.levelText);
+        this.game = this.levels.getGamePanel();
         this.game.addPropertyChangeListener(evt -> {
             if (evt.getPropertyName().equals("ScoreValue")) {
                 this.scorePanel.setScore(evt);
-                this.game.life = this.scorePanel.getLife();
+                this.levels.life = this.scorePanel.getLife();
                 refresh();
             }
             if (evt.getPropertyName().equals("GameOver")) {
@@ -53,21 +55,28 @@ public class MainFrame {
                 reLaunch();
             }
         });
+        this.scorePanel.save.addActionListener(e -> {
+//            this.game.an();
+        });
         this.scorePanel.restart.addActionListener(e -> {
             this.scorePanel.levelText = 0;
             this.scorePanel.lifeText = 0;
             this.scorePanel.gameScoreText = 0;
+            this.scorePanel.update();
             reLaunch();
         });
     }
 
     private void reLaunch() {
         this.frame.remove(this.game);
+        this.frame.remove(this.scorePanel);
         this.frame.setVisible(false);
         init();
+        refresh();
     }
 
     private void refresh() {
+
         this.frame.revalidate();
         this.frame.repaint();
     }

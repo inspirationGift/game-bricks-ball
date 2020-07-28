@@ -1,7 +1,7 @@
-package main.builder.entities.block;
+package main.builder.entities.blocks;
 
-import main.builder.addons.BlockColor;
-import main.builder.addons.PowerUpType;
+import main.builder.addons.color.BlockColor;
+import main.builder.addons.bonus.BonusType;
 import main.utils.Randomizer;
 
 import java.awt.*;
@@ -12,8 +12,9 @@ public class Block extends Rectangle {
     public int dy;
     public Rectangle left, right;
     public boolean destroyed = false;
-    private boolean isBlockPoweredUp = false;
-    private PowerUpType powerUpType = PowerUpType.DO_NOTHING;
+
+    private boolean hasBlockBonus = false;
+    private BonusType bonusType = BonusType.DO_NOTHING;
     private int qHits;
     private String str;
 
@@ -35,7 +36,7 @@ public class Block extends Rectangle {
         this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(str));
         this.left = new Rectangle(x - 1, y, 1, height);
         this.right = new Rectangle(x + width + 1, y, 1, height);
-        this.dx = Randomizer.randomInRangeNotZero(-5, 5);
+        this.dx = Randomizer.randomInRangeNotZero(-3, 3);
         this.dy = Randomizer.randomInRangeNotZero(-5, 0);
     }
 
@@ -52,23 +53,24 @@ public class Block extends Rectangle {
         this.destroyed = destroyed;
     }
 
-    public boolean isBlockPoweredUp() {
-        return isBlockPoweredUp;
+    public boolean hasBlockBonus() {
+        return hasBlockBonus;
     }
 
-    public void setBlockPoweredUp(boolean blockPoweredUp) {
-        isBlockPoweredUp = blockPoweredUp;
+    public void setBlockHasBonus(boolean blockPoweredUp) {
+        hasBlockBonus = blockPoweredUp;
     }
 
-    public PowerUpType getPowerUpType() {
-        return powerUpType;
+    public BonusType getBonusType() {
+        return bonusType;
     }
 
-    public void setPowerUpType(PowerUpType powerUpType) {
-        this.powerUpType = powerUpType;
+    public void setBonusType(BonusType bonusType) {
+        this.bonusType = bonusType;
+        if (!bonusType.equals(BonusType.DO_NOTHING)) this.hasBlockBonus = true;
     }
 
-    public void setPic(PowerUpType pic) {
+    public void setPic(BonusType pic) {
         this.pic = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource(pic.getAnimate()));
     }
 
@@ -84,4 +86,12 @@ public class Block extends Rectangle {
         this.qHits = qHits;
     }
 
+    @Override
+    public String toString() {
+        return "Block{" +
+                "destroyed=" + destroyed +
+                ", hasBlockBonus=" + hasBlockBonus +
+                ", bonusType=" + bonusType +
+                '}';
+    }
 }

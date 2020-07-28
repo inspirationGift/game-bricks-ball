@@ -23,7 +23,6 @@ public class Randomizer {
         return r.nextInt((max - min) + 1) + min;
     }
 
-
     public static Object pullElementFromMap(Map map, boolean isRandom) {
         int size = map.size();
         Object value;

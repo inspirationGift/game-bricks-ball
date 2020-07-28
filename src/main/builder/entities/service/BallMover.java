@@ -1,8 +1,8 @@
-package main.builder.entities;
+package main.builder.entities.service;
 
-import main.builder.addons.BlockColor;
-import main.builder.addons.PowerUpType;
-import main.builder.entities.block.Block;
+import main.builder.addons.color.BlockColor;
+import main.builder.addons.bonus.BonusType;
+import main.builder.entities.blocks.Block;
 
 public class BallMover {
 
@@ -25,7 +25,7 @@ public class BallMover {
     }
 
     public void doesBallDestroy(Block ball) {
-        if (ball.y > this.height + 1 && !ball.isDestroyed())
+        if (ball.y > this.height - 1 && !ball.isDestroyed())
             ball.setDestroyed(true);
     }
 
@@ -41,18 +41,19 @@ public class BallMover {
     }
 
     private void ballIntersectPaddle(Block ball, Block paddle) {
-        if ((ball.y < 0) || ball.intersects(paddle)) {
+        if ((ball.y < 1) || ball.intersects(paddle)) {
             ball.dy *= -1;
         }
-        if (ball.intersects(paddle.x, paddle.y, 1, paddle.height) ||
-                ball.intersects(paddle.x + paddle.width, paddle.y, 1, paddle.height)) {
-            ball.dx *= -1;
+        if (ball.intersects(paddle.x - 1, paddle.y, 1, paddle.height) ||
+                ball.intersects(paddle.x + paddle.width + 1, paddle.y, 1, paddle.height)) {
+//            ball.dx *= -1;
             ball.dy *= -1;
         }
     }
 
+
     private void blockDestroyer(Block ball, Block block) {
-        int i = block.getqHits() - (ball.getPowerUpType() == PowerUpType.BIG_BALL ? 2 : 1);
+        int i = block.getqHits() - (ball.getBonusType() == BonusType.BIG_BALL ? 2 : 1);
         if (i < 1) {
             block.setDestroyed(true);
         }
@@ -64,12 +65,12 @@ public class BallMover {
 
     private boolean ballIntersectsLeftRightBlock(Block ball, Block block) {
         if ((block.left.intersects(ball) || block.right.intersects(ball)) && !block.destroyed) {
-            ball.dx *= -1;
+            ball.dy *= -1;
+
             blockDestroyer(ball, block);
             return true;
         }
         return false;
-
     }
 
     private boolean ballIntersectsBlock(Block ball, Block block) {

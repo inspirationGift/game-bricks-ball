@@ -1,53 +1,49 @@
-package main.builder.entities.block;
+package main.builder.entities.blocks;
 
-import main.builder.addons.BlockColor;
-import main.builder.addons.PowerUpType;
-import main.builder.addons.ColorDistributor;
+import main.builder.addons.bonus.BonusType;
+import main.builder.addons.figures.BlockPosition;
+import main.core.LevelSettings;
 import main.utils.Scheduler;
 
 import java.util.*;
 import java.util.List;
 
 public class BlocksBuilder {
+
     private List<Block> horizontalBlocksList;
     private List<Block> ballList;
+    private List<Block> bonuses;
     private Block paddle;
     private Block gameOverSign;
     private Block winSign;
 
-    public BlocksBuilder(BlockSettings blockSettings) {
-        this.horizontalBlocksList = new ArrayList<>();
-        this.ballList = new ArrayList<>();
-        horizontalBlocksBuilder(blockSettings);
+    public BlocksBuilder(LevelSettings ls) {
+        this.horizontalBlocksList = Collections.synchronizedList(new ArrayList<>());
+        this.ballList = Collections.synchronizedList(new ArrayList<>());
+        this.bonuses = Collections.synchronizedList(new ArrayList<>());
+
+        horizontalBlocksBuilder(ls);
         paddleBuilder();
-        createBall(PowerUpType.ADD_BALL);
+        createBall(BonusType.ADD_BALL);
         signsBuilder();
     }
 
-    private void horizontalBlocksBuilder(BlockSettings blockSettings) {
-        int qBlocks = blockSettings.getqBlocks();
-        int rowStep = blockSettings.getRowStep();
-        int qBlocksInRow = blockSettings.getqBlocksInRow();
-        boolean isEquallyDistribute = blockSettings.isEquallyDistribute();
+    public List<Block> getBonuses() {
+        return bonuses;
+    }
 
-        ColorDistributor location = new ColorDistributor(qBlocks, isEquallyDistribute);
-        location.setRowMap(rowStep, qBlocksInRow);
-        int u = 0;
-        for (int i = 0; i < qBlocks; i++) {
-            Integer y = location.pullRowFromRowMap();
-            BlockColor color = location.pullRowFromColorMap(); //random color
-            if (u == qBlocksInRow) u = 0;
-            horizontalBlocksList.add(new Block((u * 60 + 2), y, 60, 25, color));
-            u++;
+    private void horizontalBlocksBuilder(LevelSettings ls) {
+        List<BlockPosition> positions = ls.getFigure();
+        for (BlockPosition pos : positions) {
+            Block block = new Block(pos.x, pos.y, pos.width, pos.height, pos.color);
+            block.setBlockHasBonus(true);
+            block.setBonusType(pos.getBonus());
+            this.horizontalBlocksList.add(block);
         }
     }
 
-    private void colorQuantityHits(BlockColor color) {
-
-    }
-
-    public void createBall(PowerUpType powerUpType) {
-        ballList.add(new Block((this.paddle.x + paddle.width / 2), 500, 25, 25, powerUpType.getAnimate()));
+    public void createBall(BonusType bonusType) {
+        ballList.add(new Block((this.paddle.x + paddle.width / 2), paddle.y - 27, 25, 25, bonusType.getAnimate()));
     }
 
     private void paddleBuilder() {
@@ -61,23 +57,37 @@ public class BlocksBuilder {
         this.gameOverSign.destroyed = true;
     }
 
-    public void poweredUPBlocksBuild(PowerUpType powerUpType) {
-        switch (powerUpType) {
-            case ADD_BALL -> createBall(powerUpType);
+    public void giveActionIfBonusIsIntersected(Block paddle) {
+        for (Block bonus : this.bonuses) {
+            if (!bonus.destroyed) {
+                synchronized (bonus) {
+                    bonus.y += 1;
+                    if (bonus.intersects(paddle)) {
+                        bonus.destroyed = true;
+                        bonusBlocksBuild(bonus.getBonusType());
+                    }
+                }
+            }
+        }
+    }
+
+    public void bonusBlocksBuild(BonusType bonusType) {
+        switch (bonusType) {
+            case ADD_BALL -> createBall(bonusType);
             case DOUBLE_BALL -> {
                 long count = this.ballList.stream().filter(val -> !val.destroyed).count();
                 for (int i = 0; i < count; i++) {
                     Scheduler.setDelay(5000);
-                    createBall(powerUpType);
+                    createBall(bonusType);
                 }
             }
             case BIG_BALL -> {
                 this.ballList.forEach(ball -> {
-                    if (ball.getPowerUpType() != PowerUpType.BIG_BALL && !ball.destroyed) {
+                    if (ball.getBonusType() != BonusType.BIG_BALL && !ball.destroyed) {
                         ball.width *= 2;
                         ball.height *= 2;
-                        ball.setPic(PowerUpType.BIG_BALL);
-                        ball.setPowerUpType(PowerUpType.BIG_BALL);
+                        ball.setPic(BonusType.BIG_BALL);
+                        ball.setBonusType(BonusType.BIG_BALL);
                     }
                 });
                 Scheduler.setDelay(5000);
@@ -91,15 +101,15 @@ public class BlocksBuilder {
         }
     }
 
-    public void poweredUpBlockDestroy() {
+    public void bonusBlockDestroy() {
         this.ballList.forEach(ball -> {
             if (!ball.destroyed) {
-                switch (ball.getPowerUpType()) {
+                switch (ball.getBonusType()) {
                     case BIG_BALL -> {
                         ball.width /= 2;
                         ball.height /= 2;
-                        ball.setPic(PowerUpType.ADD_BALL);
-                        ball.setPowerUpType(PowerUpType.ADD_BALL);
+                        ball.setPic(BonusType.ADD_BALL);
+                        ball.setBonusType(BonusType.ADD_BALL);
                     }
                     case DOUBLE_BALL -> ball.setDestroyed(true);
                 }
@@ -128,6 +138,14 @@ public class BlocksBuilder {
 
     public void setHorizontalBlocksList(Block horizontalBlock) {
         this.horizontalBlocksList.add(horizontalBlock);
+    }
+
+    public void setBonusBlock(Block block) {
+        Block newBlock;
+        block.setBlockHasBonus(false);
+        newBlock = new Block(block.x, block.y, 25, 19, block.getBonusType().getValue());
+        newBlock.setBonusType(block.getBonusType());
+        this.bonuses.add(newBlock);
     }
 
     public List<Block> getBallList() {
