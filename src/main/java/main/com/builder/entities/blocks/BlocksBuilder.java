@@ -4,7 +4,7 @@ import main.com.builder.addons.bonus.BonusType;
 import main.com.builder.addons.figures.BlockPosition;
 import main.com.core.LevelSettings;
 import main.com.utils.Scheduler;
-import main.com.utils.recorder.StateDTO;
+import main.com.state.StateDTO;
 
 import java.io.Serializable;
 import java.util.*;

@@ -10,7 +10,6 @@ public class BlockPosition {
     public int height;
     public BonusType bonus;
     public BlockColor color;
-    private Figure figure;
     public boolean isBonus;
 
     public BlockPosition(int x, int y, int width, int height) {

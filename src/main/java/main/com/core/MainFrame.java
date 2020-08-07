@@ -1,8 +1,12 @@
 package main.com.core;
 
 import main.com.levels.Levels;
-import main.com.utils.recorder.Recorder;
-import main.com.utils.recorder.StateDTO;
+import main.com.state.GameStateImpl;
+import main.com.state.State;
+import main.com.state.StateDTO;
+import main.com.state.StateService;
+import main.com.utils.BOException;
+import main.com.utils.Recorder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,30 +19,29 @@ public class MainFrame {
     private Levels levels;
     private GamePanel game;
     private ScorePanel scorePanel;
-    Recorder recorder;
+    private final State gameStateImpl;
     boolean uploaded;
     StateDTO state;
 
-    public MainFrame(Recorder recorder) {
-        this.recorder = recorder;
+    public MainFrame() throws BOException {
+        this.gameStateImpl = new GameStateImpl(new Recorder("records/state.json"), new StateService());
         this.frame = new JFrame("Blocks & Fun");
-        this.scorePanel = new ScorePanel(recorder.getRecord());
+        this.scorePanel = new ScorePanel();
         this.game = new GamePanel();
         this.frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                trackRecord();
+                try {
+                    scorePanel.updateRecord();
+                } catch (BOException boException) {
+                    boException.printStackTrace();
+                }
                 System.exit(0);
             }
         });
         addListeners();
         newGame();
         init();
-    }
-
-    public void trackRecord() {
-        if (scorePanel.doesRewrite())
-            recorder.writeData(String.valueOf(scorePanel.gameScoreText), "record");
     }
 
     public void init() {
@@ -62,7 +65,7 @@ public class MainFrame {
                 refresh();
             }
             if (evt.getPropertyName().equals("GameOver")) {
-                if (this.scorePanel.getLife() > 0 && (int) evt.getNewValue() == 1) {
+                if (this.scorePanel.getLife() > 0) {
                     this.game.setStop();
                     this.scorePanel.setLife(this.scorePanel.lifeText - 1);
                     this.scorePanel.update();
@@ -88,7 +91,11 @@ public class MainFrame {
             }
             if (e.getActionCommand().equals("Upload") && !uploaded) {
                 this.uploaded = true;
-                this.state = recorder.getState();
+                try {
+                    this.state = gameStateImpl.getState();
+                } catch (BOException boException) {
+                    boException.printStackTrace();
+                }
                 if (state != null) {
                     this.game.setStop();
                     this.game.newGameLauncher(state);
@@ -107,13 +114,21 @@ public class MainFrame {
         this.scorePanel.save.addActionListener(e -> {
             if (e.getActionCommand().equals("Save")) {
                 this.game.setStop();
-                this.game.setState(recorder, this.levels.frameWidth, this.levels.frameHeight, this.scorePanel);
+                try {
+                    this.gameStateImpl.writeState(new StateDTO(this.game, this.scorePanel, this.levels.levelSettings));
+                } catch (BOException boException) {
+                    boException.printStackTrace();
+                }
                 this.game.isStateSent = true;
             }
         });
         this.scorePanel.restart.addActionListener(e -> {
             this.game.setStop();
-            trackRecord();
+            try {
+                this.scorePanel.updateRecord();
+            } catch (BOException boException) {
+                boException.printStackTrace();
+            }
             this.scorePanel.next.setText("Upload");
             this.scorePanel.reset();
             reLaunch();
