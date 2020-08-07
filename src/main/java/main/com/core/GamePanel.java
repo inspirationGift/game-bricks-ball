@@ -1,13 +1,12 @@
 package main.com.core;
 
-import main.com.builder.entities.service.Animate;
 import main.com.builder.addons.bonus.BonusType;
-import main.com.builder.entities.service.BallMover;
-import main.com.builder.entities.blocks.BlocksBuilder;
 import main.com.builder.entities.blocks.Block;
+import main.com.builder.entities.blocks.BlocksBuilder;
+import main.com.builder.entities.service.Animate;
+import main.com.builder.entities.service.BallMover;
 import main.com.utils.Scheduler;
-import main.com.utils.recorder.Recorder;
-import main.com.utils.recorder.StateDTO;
+import main.com.state.StateDTO;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +22,6 @@ public class GamePanel extends JPanel implements KeyListener {
     public boolean isStateSent;
     private List<Block> bonusList;
     public BlocksBuilder blocksBuilder;
-
     private BallMover ballMover;
     private List<Block> blocks;
     private List<Block> ballList;
@@ -119,7 +117,7 @@ public class GamePanel extends JPanel implements KeyListener {
                     }
                 }
             }
-            if (Scheduler.isDelayed()) this.blocksBuilder.bonusBlockDestroy();
+            if (!Scheduler.isDelayed()) this.blocksBuilder.bonusBlockDestroy();
             addBonusAction();
             gameOver(1);
             win();
@@ -166,10 +164,9 @@ public class GamePanel extends JPanel implements KeyListener {
 
     public void continueGame() {
         this.gameOverCount = 0;
-        this.paddle.x = 175;
-        this.blocksBuilder.createBall(BonusType.ADD_BALL);
-        this.gameOverSign.destroyed = true;
         this.paddle.destroyed = false;
+        this.gameOverSign.destroyed = true;
+        this.blocksBuilder.createBall(BonusType.ADD_BALL);
         this.isWon = false;
     }
 
@@ -218,9 +215,20 @@ public class GamePanel extends JPanel implements KeyListener {
     public void keyReleased(KeyEvent e) {
     }
 
-    public void setState(Recorder recorder, int frameWidth, int frameHeight, ScorePanel scorePanel) {
-        recorder.writeState(new StateDTO(this.ballList, this.bonusList, this.blocks,
-                frameWidth, frameHeight, scorePanel, this.paddleSpeed));
+    public int getPaddleSpeed() {
+        return paddleSpeed;
+    }
+
+    public List<Block> getBonusList() {
+        return bonusList;
+    }
+
+    public List<Block> getBlocks() {
+        return blocks;
+    }
+
+    public List<Block> getBallList() {
+        return ballList;
     }
 }
 

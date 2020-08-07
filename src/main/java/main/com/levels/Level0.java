@@ -32,7 +32,7 @@ public class Level0 extends LevelSettings {
             setRandomBonuses(15);
         }
         if (i >= 5 && i < 10) {
-            figure.set(550, 600, 60, 25, 36);
+            figure.set(550, 600, 60, 25, 42);
             setFigure(figure);
             BlockColor.DEFAULT.setRandomBlockHits(4);
 

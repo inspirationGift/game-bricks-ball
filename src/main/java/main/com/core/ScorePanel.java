@@ -1,5 +1,8 @@
 package main.com.core;
 
+import main.com.utils.BOException;
+import main.com.utils.Recorder;
+
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -16,25 +19,26 @@ public class ScorePanel extends JPanel {
     public int levelText;
     public int lifeText;
     private int record;
+    private final Recorder scoreRecord;
 
 
-    public ScorePanel(int record) {
+    public ScorePanel() throws BOException {
         this.restart = new JButton("New");
         this.save = new JButton("Save");
         this.next = new JButton("Upload");
         this.ta = new JTextArea();
         this.layout = new FlowLayout();
-        this.record = record;
+        this.scoreRecord = new Recorder("records/record.txt");
+        String str = scoreRecord.readFile().get(0);
+        this.record = (str != null) ? Integer.parseInt(str) : 0;
+
         setPanel();
     }
 
-    public boolean doesRewrite() {
+    public void updateRecord() throws BOException {
         if (gameScoreText > record) {
-            this.record = gameScoreText;
-            return true;
+            this.scoreRecord.writeData(String.valueOf(this.gameScoreText));
         }
-        return false;
-
     }
 
     public void reset() {

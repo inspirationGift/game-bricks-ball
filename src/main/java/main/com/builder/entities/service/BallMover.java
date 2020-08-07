@@ -66,7 +66,6 @@ public class BallMover {
     private boolean ballIntersectsLeftRightBlock(Block ball, Block block) {
         if ((block.left.intersects(ball) || block.right.intersects(ball)) && !block.destroyed) {
             ball.dy *= -1;
-
             blockDestroyer(ball, block);
             return true;
         }

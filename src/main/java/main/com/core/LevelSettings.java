@@ -26,7 +26,7 @@ public class LevelSettings {
         this.draw = new FigureDraw(figure);
         this.frameHeight = this.draw.getFrameHeight();
         this.frameWidth = this.draw.getFrameWidth();
-        this.positions = this.draw.getFigure();
+        this.positions = this.draw.getBlockPositionsList();
         this.qBlocks = this.positions.size();
     }
 
@@ -46,7 +46,7 @@ public class LevelSettings {
         while (maxBonuses != 0) {
             int random = Randomizer.randomInRange(1, positions.size() - 1);
             if (positions.get(random).getBonus() == BonusType.DO_NOTHING) {
-                positions.get(random).setBonus(BonusType.DO_NOTHING.getAnyAndSetBonus());
+                positions.get(random).setBonus(BonusType.DO_NOTHING.getAnyBonusAndSetIncrementalQ());
                 maxBonuses--;
             }
         }

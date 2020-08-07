@@ -16,4 +16,5 @@ public class Levels {
         this.frameWidth = this.levelSettings.getFrameWidth();
         this.frameHeight = this.levelSettings.getFrameHeight();
     }
+
 }

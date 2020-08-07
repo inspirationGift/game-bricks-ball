@@ -48,4 +48,17 @@ public enum Figure {
     public int getBlockWidth() {
         return blockWidth;
     }
+
+    @Override
+    public String toString() {
+        return "Figure{" +
+                "qRows=" + qRows +
+                ", qInRow=" + qInRow +
+                ", frameWidth=" + frameWidth +
+                ", frameHeight=" + frameHeight +
+                ", blockHeight=" + blockHeight +
+                ", blockWidth=" + blockWidth +
+                ", requiredBlocks=" + requiredBlocks +
+                '}';
+    }
 }

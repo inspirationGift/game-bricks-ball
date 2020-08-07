@@ -11,15 +11,30 @@ public class Scheduler {
 
     public static boolean isDelayed() {
         currentTime = new Date().getTime();
-        if (currentTime - previousTime > delay) {
+        if (currentTime - previousTime >= delay) {
             previousTime = currentTime;
             delay = 0;
-            return true;
+            return false;
         }
-        return false;
+        return true;
+    }
+
+    public static long getDelay() {
+        return delay;
     }
 
     public static void setDelay(long delay) {
-        Scheduler.delay += delay;
+        currentTime = new Date().getTime();
+        if (previousTime == 0) previousTime = currentTime;
+        Scheduler.delay = delay;
     }
+
+    public static long getPreviousTime() {
+        return previousTime;
+    }
+
+    public static long getCurrentTime() {
+        return currentTime;
+    }
+
 }

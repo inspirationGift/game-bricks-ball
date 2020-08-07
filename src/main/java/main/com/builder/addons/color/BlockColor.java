@@ -15,10 +15,10 @@ public enum BlockColor {
     private int qHits;
     private int rateTransition;
     public int zeroHitsLength;
-    public int notZeroHitsLength;
+    private int notZeroHitsLength;
 
-    BlockColor(String s, int qHits, int rateTransition) {
-        this.pic = s;
+    BlockColor(String pic, int qHits, int rateTransition) {
+        this.pic = pic;
         this.qHits = qHits;
         this.rateTransition = rateTransition;
     }
@@ -33,6 +33,10 @@ public enum BlockColor {
 
     public String getPic() {
         return this.pic;
+    }
+
+    public void setPic(String pic) {
+        this.pic = pic;
     }
 
     public int getqHits() {
@@ -73,7 +77,6 @@ public enum BlockColor {
             v.setqHits(random);
         });
     }
-
 
     public void setRandomBlockHits(int maxHits) {
         Object[] zeroHits = getZeroHits();
